@@ -7,22 +7,23 @@ from dateutil import tz
 from datetime import datetime
 import sqlalchemy
 
-def assignTmChrt(utcTime): 
+
+def assignTmChrt(utcTime): #this function uses the time that the songs were listened to, to assign a time of day classification
     try: #format 
-        utc = datetime.strptime(str(utcTime), "%Y-%m-%dT%H:%M:%S.%fZ")
+        utc = datetime.strptime(str(utcTime), "%Y-%m-%dT%H:%M:%S.%fZ") 
     except:
         # ("Already Formatted")
         utc = datetime.strptime(str(utcTime), "%Y-%m-%dT%H:%M:%SZ")
         
     nUTC = utc.replace(tzinfo=tz.gettz("UTC"))
 
-    locTime = nUTC.astimezone(tz.gettz("America/Chicago"))
+    locTime = nUTC.astimezone(tz.gettz("America/Chicago")) #changes from UTC time to local time 
 
     strLocTime = str(locTime)
 
-    numTime = int(strLocTime[11:13] + strLocTime[14:16])
+    numTime = int(strLocTime[11:13] + strLocTime[14:16]) #splits the time string and concatenates to create form HHMM. Example: 1235
 
-
+    # classification based on the time
     if ((numTime) >= 500) and ((numTime) < 1000):
         # "Early-morning"
         timeOfDay = 0

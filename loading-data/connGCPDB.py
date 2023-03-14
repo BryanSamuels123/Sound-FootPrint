@@ -3,7 +3,8 @@ import pymysql
 import sqlalchemy
 import os 
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/bryan/Desktop/Webscraper/Data Science/silicon-monitor-373300-de2951ea01a7.json" 
+# path to the files containing the GAC
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/bryan/Desktop/Webscraper/Data Science/Sound-Footprint/silicon-monitor-373300-de2951ea01a7.json" 
 
 
 

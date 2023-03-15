@@ -1,4 +1,5 @@
 import requests
+from dotenv import load_dotenv
 import urllib.parse
 import base64
 import time
@@ -6,6 +7,7 @@ import connGCPDB
 import os
 import sqlalchemy
 
+load_dotenv()
 
 try:
     pool = connGCPDB.connect_with_connector("tokenData")
@@ -19,8 +21,9 @@ except:
 # cur = conn.cursor()
 
 clientID = os.getenv("clientID")
-
 clientSecret = os.getenv("clientSecret")
+
+
 
 uri = "http://127.0.0.1:5500/Data%20Science/index.html"
 

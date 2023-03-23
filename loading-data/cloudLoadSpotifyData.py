@@ -225,16 +225,29 @@ for item in tracks:
     #at this point all of the data from this track has been added.
 
     #now I add the linker table info 
-    for artist in item["track"]["artists"]: 
+    for artist in item["track"]["artists"]:  #pulls the track/album id and artist id from the database for each artist on the track
         AALinker = cur.execute(sqlalchemy.text("select Albums.id, Artists.id from Albums join Artists on Albums.spotifyAlbumID =(:alID) and Artists.name = (:artName)"), parameters={"alID" : spotAlID, "artName" : artist["name"],})
         aaTup = (AALinker.fetchall()[0])
         cur.execute(sqlalchemy.text("INSERT IGNORE INTO Artists_Albums (album_id, artist_id) values (:alID ,:artID )"), parameters={"alID" : aaTup[0], "artID" : aaTup[1],})
         cur.commit()
+        
 
-        atLinker = cur.execute(sqlalchemy.text("select Tracks.id, Artists.id from Artists join Tracks on Artists.name =(:name) and Tracks.spotifyTrackID =(:tID)"), parameters= {"name" : artist["name"], "tID" :spotTrackID,})
-        atTup = (atLinker.fetchall()[0])
-        cur.execute(sqlalchemy.text("INSERT IGNORE INTO Artists_Tracks (track_id, artist_id) values (:tID , :artID)"), parameters= {"tID" : atTup[0], "artID" : atTup[1],})
-        cur.commit()
+        atLinker = cur.execute(sqlalchemy.text("select Tracks.id, Artists.id from Artists join Tracks on Artists.name =(:name) and Tracks.spotifyTrackID =(:tID) order by Tracks.id DESC"), parameters= {"name" : artist["name"], "tID" :spotTrackID,})
+        atTups = (atLinker.fetchall())
+        
+        tempList = cur.execute(sqlalchemy.text("Select * from Artists_Tracks")) #list of all track artist pairs
+        tempList = tempList.fetchall()
+        
+      
+        for atTup in atTups: 
+            if atTup not in tempList: # check if this data is new
+                cur.execute(sqlalchemy.text("INSERT IGNORE INTO Artists_Tracks (track_id, artist_id) values (:tID , :artID)"), parameters= {"tID" : atTup[0], "artID" : atTup[1],})
+                cur.commit()
+                print("adding new pair")
+            else:
+                # already in the db 
+                continue 
+            
 
     print()
 

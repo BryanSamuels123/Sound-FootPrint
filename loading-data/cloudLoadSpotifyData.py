@@ -1,3 +1,6 @@
+# Code by Bryan Samuels: University of North Texas, Denton
+# Email: BryanSamuels123@gmail.com
+
 import json
 import requests
 import Dynamic_SpotifyOAuth
@@ -89,7 +92,7 @@ def classifyGenre(g):  # returns a list containing Genre and subGenre, respectiv
 
     return gList
 
-def loadArtistData(name, genList, spotArtID):
+def loadArtistData(name, genList, spotArtID): # loads the arists information into the mySQL database
     genreIDS = list()
 # for artist in item["track"]["artists"]:
 #     goop[artist["name"]] = goop.get(artist["name"], 0) + 1
@@ -119,7 +122,7 @@ def loadArtistData(name, genList, spotArtID):
     cur.commit()
 
 
-def loadTrackData(tName, spotAlID, alName, spotifyTrackID, timePlayed, tmChart):
+def loadTrackData(tName, spotAlID, alName, spotifyTrackID, timePlayed, tmChart): # Loads the track information into the MySQL database
 
     albumID = cur.execute(sqlalchemy.text("SELECT id FROM Albums where name= (:name)"), parameters={"name": alName,})
     alID = albumID.fetchone()
@@ -136,16 +139,16 @@ def loadTrackData(tName, spotAlID, alName, spotifyTrackID, timePlayed, tmChart):
     cur.execute(sqlalchemy.text("INSERT IGNORE INTO Tracks (name, album_id, spotifyTrackID, playedAt, timeChart) VALUES (:name, :alID, :tID, :playedAt, :timeChart)"), parameters={"name": tName, "alID" : alID[0], "tID" : spotifyTrackID, "playedAt" : timePlayed, "timeChart" : tmChart})
     cur.commit()
 
-# print("Not in Albums")
 
-try: 
+
+try: #get oauth token
     OauthToken = Dynamic_SpotifyOAuth.refreshOAuth()["access_token"]
     
-except:
+except: #catch if error
     print(Dynamic_SpotifyOAuth.refreshOAuth())
     exit(1)
 
-# try:
+# try:   use this to connect to the local database, update file path
 #     conn = sqlite3.connect("/Users/bryan/Desktop/Webscraper/databases/Music_Data.sqlite3")
     # cur = conn.cursor()
 
@@ -154,24 +157,24 @@ try:
     pool = connGCPDB.connect_with_connector("musicData")
     cur = pool.connect()
     
-except:
+except: #catch if error
     print("Cannot Connect to Database")
     exit(1)
 
 
 
 
-epoch_time = int(time.time())
-url = f"https://api.spotify.com/v1/me/player/recently-played?after={epoch_time}&limit=50"
+epoch_time = int(time.time()) #gets the current epoch time
+url = f"https://api.spotify.com/v1/me/player/recently-played?after={epoch_time}&limit=50" # building curl
 
-header = {"Authorization": f"Bearer {OauthToken}"}
+header = {"Authorization": f"Bearer {OauthToken}"} #build parameters
 
-dataStream = requests.get(url, headers=header).text
-data = json.loads(dataStream)
+dataStream = requests.get(url, headers=header).text # api call
+data = json.loads(dataStream) 
 # print(dataStream)
 
 
-if "error" in data:
+if "error" in data: #handle response
     print("Error:", data["error"]["message"])
     exit(1)
 
@@ -184,12 +187,12 @@ if "error" in data:
 
 # # print(dataStream)
 tracks = data["items"]
-# aID = ((tracks[0]["track"]["artists"][0]["id"]))
+
 fGenres = list()
-# getGenre(aID)
+
 albums = dict()
-# # dtInfo = dict()
-for item in tracks:
+
+for item in tracks: #map through all of the information and load into database.
     print(item["track"]["name"])
     spotTrackID = item["track"]["id"]
     # print(item["track"]["name"], "ID:", item["track"]["id"])
@@ -243,7 +246,7 @@ for item in tracks:
             if atTup not in tempList: # check if this data is new
                 cur.execute(sqlalchemy.text("INSERT IGNORE INTO Artists_Tracks (track_id, artist_id) values (:tID , :artID)"), parameters= {"tID" : atTup[0], "artID" : atTup[1],})
                 cur.commit()
-                print("adding new pair")
+                print("adding new pair") #print statements help aide in the visualization
             else:
                 # already in the db 
                 continue 
